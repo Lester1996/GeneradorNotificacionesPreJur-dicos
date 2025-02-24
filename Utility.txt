@@ -1,0 +1,432 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using GeneradorNotificacionesPreJurídicos.Models;
+using Microsoft.Office.Interop.Word;
+using Word = Microsoft.Office.Interop.Word;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Runtime.InteropServices;
+using Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Core;
+
+
+
+namespace GeneradorNotificacionesPreJurídicos
+{
+    public class Utility
+    {
+        Repository repository = new Repository();
+
+        string directorioDestino = $@"C:/Notificaciones Pre-Jurídico/{DateTime.Now.ToString("dd-MM-yyyy")}";
+        public string GenerateNotificaciones(List<InformacionCliente> informacionCliente, List<DeudaCliente> DeudaCliente, List<SaldoFinanciado> SaldoFinanciado, List<InfoLider> InfoLider)
+        {
+            var informacion = informacionCliente.FirstOrDefault();
+            var deuda = DeudaCliente.FirstOrDefault();
+            var saldo = SaldoFinanciado.FirstOrDefault();
+            var lider = InfoLider.FirstOrDefault();
+
+            try
+            {
+                KillProcess("WINWORD.EXE");
+
+
+
+                // Crear la carpeta donde se guardarán los documentos
+                if (!Directory.Exists(directorioDestino))
+                {
+                    Directory.CreateDirectory(directorioDestino);
+                }
+
+                System.Globalization.CultureInfo culture = new System.Globalization.CultureInfo("es-HN");
+
+                // Creando documento de Word
+                Word.Application wordApp = new Word.Application();
+                Word.Document document = wordApp.Documents.Open($@"{Environment.CurrentDirectory}/plantilla notificaciones de corte.docx");
+                Word.Range range = document.Content;
+                object missing = System.Reflection.Missing.Value;
+
+                foreach (var informacion in informacionCliente)
+                {
+
+
+                }
+
+                //ENCABEZADO
+                Word.Paragraph parrafoEncabezado = document.Content.Paragraphs.Add(ref missing);
+                parrafoEncabezado.Range.Text = $@"";
+                parrafoEncabezado.Range.Font.Size = 12;
+                parrafoEncabezado.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoEncabezado.Range.Font.Bold = 0;
+
+                Word.Range parrafoValorEncabezado = parrafoEncabezado.Range;
+                parrafoValorEncabezado.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoValorEncabezado.Text = $@"{informacion.Area}, {informacion.DiaActual} de {informacion.MesActualText} del {informacion.AnioActual}{Environment.NewLine}";
+                parrafoValorEncabezado.Font.Size = 12;
+                parrafoValorEncabezado.Font.Name = "Calibri (Cuerpo)";
+                parrafoValorEncabezado.Font.Bold = 0;
+
+                range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphRight;
+                parrafoEncabezado.Range.InsertParagraphAfter();
+
+                // NOMBRE
+                Word.Paragraph parrafoNombre = document.Content.Paragraphs.Add(ref missing);
+                parrafoNombre.Range.Text = $@"Nombre de Cliente: ";
+                parrafoNombre.Range.Font.Size = 12;
+                parrafoNombre.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoNombre.Range.Font.Bold = 0;
+
+                Word.Range parrafoValorNombre = parrafoNombre.Range;
+                parrafoValorNombre.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoValorNombre.Text = $@"{informacion.NombreCliente}";
+                parrafoValorNombre.Font.Size = 12;
+                parrafoValorNombre.Font.Name = "Calibri (Cuerpo)";
+                parrafoValorNombre.Font.Bold = 1;
+
+                parrafoNombre.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphLeft;
+                parrafoNombre.Range.InsertParagraphAfter();
+
+                // CLAVE
+                Word.Paragraph parrafoClave = document.Content.Paragraphs.Add(ref missing);
+                parrafoClave.Range.Text = $@"Clave: ";
+                parrafoClave.Range.Font.Size = 12;
+                parrafoClave.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoClave.Range.Font.Bold = 0;
+
+                Word.Range parrafoValorClave = parrafoClave.Range;
+                parrafoValorClave.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoValorClave.Text = $@"{informacion.Clave}";
+                parrafoValorClave.Font.Size = 12;
+                parrafoValorClave.Font.Name = "Calibri (Cuerpo)";
+                parrafoValorClave.Font.Bold = 1;
+
+                parrafoClave.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphLeft;
+                parrafoClave.Range.InsertParagraphAfter(); 
+
+
+                // DIRECCION
+                Word.Paragraph parrafoDireccion = document.Content.Paragraphs.Add(ref missing);
+                parrafoDireccion.Range.Text = $@"Dirección: ";
+                parrafoDireccion.Range.Font.Size = 12;
+                parrafoDireccion.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoDireccion.Range.Font.Bold = 0;
+
+                Word.Range parrafoValorDireccion = parrafoNombre.Range;
+                parrafoValorDireccion.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoValorDireccion.Text = $@"{informacion.DireccionCliente}{Environment.NewLine}";
+                parrafoValorDireccion.Font.Size = 12;
+                parrafoValorDireccion.Font.Name = "Calibri (Cuerpo)";
+                parrafoValorDireccion.Font.Bold = 1;
+
+                parrafoDireccion.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphLeft;
+                parrafoDireccion.Range.InsertParagraphAfter();
+
+                //ASUNTO
+                Word.Paragraph parrafoAsunto = document.Content.Paragraphs.Add(ref missing);
+                parrafoAsunto.Range.Text = $@"ASUNTO: NOTIFICACIÓN DE DEUDA Y REQUERIMIENTO DE PAGO";
+                parrafoAsunto.Range.Font.Size = 12;
+                parrafoAsunto.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoAsunto.Range.Font.Bold = 1;
+
+                parrafoAsunto.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphLeft;
+                parrafoAsunto.Range.InsertParagraphAfter();
+
+                //Descripcion
+                Word.Paragraph parrafoDescripcion = document.Content.Paragraphs.Add(ref missing);
+                parrafoDescripcion.Range.Text = $@"{Environment.NewLine}La ";
+                parrafoDescripcion.Range.Font.Size = 12;
+                parrafoDescripcion.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoDescripcion.Range.Font.Bold = 0;
+                parrafoDescripcion.Range.ParagraphFormat.LineSpacingRule = WdLineSpacing.wdLineSpaceSingle;
+
+                Word.Range parrafoUTCD = parrafoDescripcion.Range;
+                parrafoUTCD.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoUTCD.Text = "EMPRESA NACIONAL DE ENERGIA ELECTRICA (ENEE), ";
+                parrafoUTCD.Font.Size = 12;
+                parrafoUTCD.Font.Name = "Calibri (Cuerpo)";
+                parrafoUTCD.Font.Bold = 1;
+
+                Word.Range parrafoDes = parrafoDescripcion.Range;
+                parrafoDes.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes.Text = $@"le informa que actualmente presenta una deuda vencida registrada en nuestro sistema de gestión comercial bajo el número de clave";
+                parrafoDes.Font.Size = 12;
+                parrafoDes.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes.Font.Bold = 0;
+
+                parrafoDireccion.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphThaiJustify;
+
+                //CLAVE
+                Word.Range parrafoCla = parrafoDescripcion.Range;
+                parrafoCla.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoCla.Text = $@" {informacion.Clave}.";
+                parrafoCla.Font.Size = 12;
+                parrafoCla.Font.Name = "Calibri (Cuerpo)";
+                parrafoCla.Font.Bold = 1;
+
+                //Sigue descripción
+                Word.Range parrafoDes1 = parrafoDescripcion.Range;
+                parrafoDes1.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes1.Text = $@" A la fecha, esta deuda asciende a la suma de ";
+                parrafoDes1.Font.Size = 12;
+                parrafoDes1.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes1.Font.Bold = 0;
+
+                parrafoDireccion.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphThaiJustify;
+
+                //DEUDA
+                decimal deudaTotal = deuda.Deuda;
+                string deudaFormateada = deudaTotal.ToString("N2");
+
+                Word.Range parrafoDeuda = parrafoDescripcion.Range;
+                parrafoDeuda.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDeuda.Text = $@"L. {deudaFormateada}";
+                parrafoDeuda.Font.Size = 12;
+                parrafoDeuda.Font.Name = "Calibri (Cuerpo)";
+                parrafoDeuda.Font.Bold = 1;
+
+                //if (saldo.SaldoF > 0)
+                //{
+                    //Sigue descripción
+                    Word.Range parrafoDes2 = parrafoDescripcion.Range;
+                    parrafoDes2.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                    parrafoDes2.Text = $@" y un saldo financiado de ";
+                    parrafoDes2.Font.Size = 12;
+                    parrafoDes2.Font.Name = "Calibri (Cuerpo)";
+                    parrafoDes2.Font.Bold = 0;
+
+                    parrafoDireccion.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphThaiJustify;
+
+                    //SALDOFINACIADO
+                    decimal Saldo = saldo.SaldoF;
+                    string saldoFormateada = Saldo.ToString("N2");
+
+                    Word.Range parrafoSaldo = parrafoDescripcion.Range;
+                    parrafoSaldo.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                    parrafoSaldo.Text = $@"L. {saldoFormateada}.";
+                    parrafoSaldo.Font.Size = 12;
+                    parrafoSaldo.Font.Name = "Calibri (Cuerpo)";
+                    parrafoSaldo.Font.Bold = 1;
+
+                //}
+
+                //Sigue descripción
+                Word.Range parrafoDes3 = parrafoDescripcion.Range;
+                parrafoDes3.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes3.Text = $@"{Environment.NewLine}Por lo anterior, le solicitamos comparezca para efectuar el pago total en concepto de ";
+                parrafoDes3.Font.Size = 12;
+                parrafoDes3.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes3.Font.Bold = 0;
+
+                Word.Range parrafoSum = parrafoDescripcion.Range;
+                parrafoSum.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoSum.Text = "SUMINISTRO DE ENERGÍA ELÉCTRICA ";
+                parrafoSum.Font.Size = 12;
+                parrafoSum.Font.Name = "Calibri (Cuerpo)";
+                parrafoSum.Font.Bold = 1;
+
+                Word.Range parrafoDes4 = parrafoDescripcion.Range;
+                parrafoDes4.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes4.Text = $@"brindado por la Empresa Nacional de Energía Eléctrica (ENEE). En caso de no poder cancelar la totalidad de la deuda de inmediato, el gestor de cobro que le entrega esta notificación está debidamente autorizado a establecer un arreglo de pago o una autorización de pago parcial conforme a las políticas de la empresa.";
+                parrafoDes4.Font.Size = 12;
+                parrafoDes4.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes4.Font.Bold = 0;
+
+                Word.Range parrafoDes5 = parrafoDescripcion.Range;
+                parrafoDes5.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes5.Text = $@"{Environment.NewLine}Asimismo, se le informa que, si no se recibe ninguna comunicación para atender este requerimiento o para establecer un acuerdo de pago de la deuda en un plazo de cuarenta y ocho horas (48) después de recibir este documento, la ENEE se reserva el derecho de trasladar la cuenta a gestión de ";
+                parrafoDes5.Font.Size = 12;
+                parrafoDes5.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes5.Font.Bold = 0;
+
+                Word.Range parrafoDes6 = parrafoDescripcion.Range;
+                parrafoDes6.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes6.Text = "cobro jurídico ";
+                parrafoDes6.Font.Size = 12;
+                parrafoDes6.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes6.Font.Bold = 1;
+
+                Word.Range parrafoDes7 = parrafoDescripcion.Range;
+                parrafoDes7.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes7.Text = $@"a través de los Tribunales de la República correspondientes.";
+                parrafoDes7.Font.Size = 12;
+                parrafoDes7.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes7.Font.Bold = 0;
+
+                Word.Range parrafoDes8 = parrafoDescripcion.Range;
+                parrafoDes8.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes8.Text = $@"{Environment.NewLine}Para obtener más información, puede comunicarse al celular ";
+                parrafoDes8.Font.Size = 12;
+                parrafoDes8.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes8.Font.Bold = 0;
+
+                Word.Range parrafoDes10 = parrafoDescripcion.Range;
+                parrafoDes10.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes10.Text = $@"{lider.Telefono} ";
+                parrafoDes10.Font.Size = 12;
+                parrafoDes10.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes10.Font.Bold = 1;
+
+                Word.Range parrafoDes11 = parrafoDescripcion.Range;
+                parrafoDes11.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes11.Text = $@"o al correo electrónico ";
+                parrafoDes11.Font.Size = 12;
+                parrafoDes11.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes11.Font.Bold = 0;
+
+                Word.Range parrafoDes12 = parrafoDescripcion.Range;
+                parrafoDes12.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes12.Text = $@"{lider.Email}";
+                parrafoDes12.Font.Size = 12;
+                parrafoDes12.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes12.Font.Bold = 1;
+
+                Word.Range parrafoDes9 = parrafoDescripcion.Range;
+                parrafoDes9.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoDes9.Text = $@"{Environment.NewLine}Atentamente,  ";
+                parrafoDes9.Font.Size = 12;
+                parrafoDes9.Font.Name = "Calibri (Cuerpo)";
+                parrafoDes9.Font.Bold = 0;
+
+                string rutaTemporal = "";
+                using (MemoryStream ms = new MemoryStream(InfoLider.FirstOrDefault().FirmaElectronica))
+                {
+                    Image imagen = Image.FromStream(ms);
+                     rutaTemporal = $@"{Environment.CurrentDirectory}\{InfoLider.FirstOrDefault().SectorL}_{DateTime.Now.ToString("yyyyMMddhhmmss")}.png";
+                    File.WriteAllBytes(rutaTemporal, ms.ToArray());
+
+                  
+                    /*
+                    Word.Range parrafoFirma = document.Content;
+                    range.Collapse(WdCollapseDirection.wdCollapseEnd);
+                    InlineShape picture = range.InlineShapes.AddPicture(rutaTemporal);*/
+                }
+
+                Word.Range parrafoFirma = parrafoDescripcion.Range;
+                Word.Shape myShape = document.Shapes.AddPicture(rutaTemporal, false, true, 0, 0, document.Application.CentimetersToPoints((float)21), document.Application.CentimetersToPoints((float)29.7), parrafoFirma);
+
+
+
+             
+
+                // Ajustar el tamaño de la imagen y configurar sus propiedades
+                myShape.ScaleHeight(0.5f, MsoTriState.msoTrue);
+                myShape.ScaleWidth(0.5f, MsoTriState.msoTrue);
+
+                // Configurar el formato de ajuste de texto
+                myShape.WrapFormat.Type = WdWrapType.wdWrapTight;
+
+                // Centrar la imagen horizontalmente
+                myShape.RelativeHorizontalPosition = WdRelativeHorizontalPosition.wdRelativeHorizontalPositionPage;
+                myShape.Left = (document.PageSetup.PageWidth - myShape.Width) / 2;
+
+                // Ajustar la posición vertical
+                float verticalPositionInCm = 21.03f; // Cambia este valor según la posición vertical deseada en cm
+                float verticalPositionInPoints = verticalPositionInCm * 28.35f; // Convertir cm a puntos
+                myShape.RelativeVerticalPosition = WdRelativeVerticalPosition.wdRelativeVerticalPositionPage;
+                myShape.Top = verticalPositionInPoints;
+
+                // Mantener el formato de ajuste de texto detrás del texto
+                myShape.WrapFormat.Type = WdWrapType.wdWrapBehind;
+                myShape.ZOrder(MsoZOrderCmd.msoSendBackward);
+
+                // Mostrar el documento
+                //wordApp.Visible = true;
+
+
+                // Agregar un nuevo párrafo al documento
+                Word.Paragraph parrafoFooter2 = document.Content.Paragraphs.Add(ref missing);
+                parrafoFooter2.Range.Text = $@"{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}______________________________________________";
+                parrafoFooter2.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+                parrafoFooter2.Range.InsertParagraphAfter();
+
+                //NOMBRE LIDER
+                Word.Paragraph parrafoN = document.Content.Paragraphs.Add(ref missing);
+                parrafoN.Range.Text = $@"";
+                parrafoN.Range.Font.Size = 12;
+                parrafoN.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoN.Range.Font.Bold = 0;
+
+                Word.Range parrafoN1 = parrafoN.Range;
+                parrafoN1.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoN1.Text = $@"{lider.NombreL}";
+                parrafoN1.Font.Size = 12;
+                parrafoN1.Font.Name = "Calibri (Cuerpo)";
+                parrafoN1.Font.Bold = 1;
+
+                parrafoN.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+                parrafoN.Range.InsertParagraphAfter();
+
+                // LIDER
+                Word.Paragraph parrafoLider = document.Content.Paragraphs.Add(ref missing);
+                parrafoLider.Range.Text = $@"Líder de Cobro Sector ";
+                parrafoLider.Range.Font.Size = 12;
+                parrafoLider.Range.Font.Name = "Calibri (Cuerpo)";
+                parrafoLider.Range.Font.Bold = 0;
+
+                Word.Range parrafoLider1 = parrafoLider.Range;
+                parrafoLider1.Collapse(Word.WdCollapseDirection.wdCollapseEnd);
+                parrafoLider1.Text = $@"{informacion.Area}";
+                parrafoLider1.Font.Size = 12;
+                parrafoLider1.Font.Name = "Calibri (Cuerpo)";
+                parrafoLider1.Font.Bold = 1;
+
+                parrafoLider.Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+                parrafoLider.Range.InsertParagraphAfter();
+
+                // Guardar y cerrar el documento
+                // Guardar y cerrar el documento por cada cliente en word
+                string filePath = $@"{directorioDestino}/Notificación de Deuda Prejurídico_Clave_{informacion.Clave}.docx";
+                document.SaveAs2(filePath);
+
+                ////// Ruta y nombre del archivo PDF
+                ////string filePath = $@"{directorioDestino}/Notificación de Deuda Prejurídico_Clave_{informacion.Clave}.pdf";
+
+                ////// Guardar el documento en formato PDF
+                ////document.SaveAs2(filePath, Word.WdSaveFormat.wdFormatPDF);
+                ///
+
+
+                return "success";
+            }
+            catch (Exception ex)
+            {
+                return ex.ToString();
+            }
+
+
+            static bool KillProcess(string processName)
+            {
+                try
+                {
+                    Process process = new Process();
+                    ProcessStartInfo startInfo = new ProcessStartInfo("taskkill.exe", $"/f /im {processName}");
+
+                    startInfo.UseShellExecute = false;  // Necesario para redirigir la salida
+                    startInfo.CreateNoWindow = true;    // Evita la creación de una ventana de consola
+                    startInfo.RedirectStandardOutput = true;
+
+                    process.StartInfo = startInfo;
+                    process.Start();
+
+                    string output = process.StandardOutput.ReadToEnd();
+                    Console.WriteLine(output);
+
+                    process.Close();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al intentar terminar {processName}: {ex.Message}");
+                    return false;
+                }
+            }
+           
+
+
+        }
+    }
+}
